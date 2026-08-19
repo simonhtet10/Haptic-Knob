@@ -9,39 +9,33 @@
 
 #include <SimpleFOC.h>
 #include <BleKeyboard.h>
-
-// ---- event type FIRST (avoids Arduino auto-prototype ordering bug) ----
 enum Evt : uint8_t { EVT_VOL_UP, EVT_VOL_DOWN, EVT_NEXT, EVT_PREV, EVT_PLAYPAUSE };
 QueueHandle_t evtQ;
 inline void emit(Evt e) { xQueueSend(evtQ, &e, 0); }   // 0 = never block the FOC loop
 
-// ---- Encoder ----
+// Encoder 
 MagneticSensorPWM sensor = MagneticSensorPWM(34, 3, 928);
 void doPWM() { sensor.handlePWM(); }
-
-// ---- Motor & driver ----
+//motor
 BLDCMotor      motor  = BLDCMotor(11);
 BLDCDriver3PWM driver = BLDCDriver3PWM(25, 26, 27, 14);
 
-// ---- BLE ----
+//BLE setup
 BleKeyboard kb("SmartKnob", "DIY", 100);
 
-// ---- Button ----
 const uint8_t BTN = 32;
 
-// ---- Modes ----
+// sets the modes
 enum { MODE_VOL = 0, MODE_TRK = 1 };
 int knobMode = MODE_VOL;
 
-// Detent geometry / feel per mode
+// Detent values
 const float VOL_STEP     = 10.0 * PI / 180.0;   // fine detents
 const float TRK_STEP     = 50.0 * PI / 180.0;   // coarse detents
 const float VOL_STRENGTH = 1.5;
 const float TRK_STRENGTH = 2.5;
 
-// Detent "catch" zone half-width per mode.
-// Outside this zone the torque is 0 -> free coasting between detents,
-// which removes the mid-gap "dent" that a linear spring creates on wide steps.
+// detent catch zone
 const float VOL_ZONE = 5.0 * PI / 180.0;
 const float TRK_ZONE = 8.0 * PI / 180.0;
 
@@ -51,12 +45,11 @@ inline float zoneFor(int m)     { return m == MODE_VOL ? VOL_ZONE     : TRK_ZONE
 
 // ---- Soft endstops (walls) ----
 // Kept SOFT and with NO damping on purpose: the AS5048A PWM velocity estimate
-// is too noisy to damp with (adding damping made it oscillate). A soft wall +
-// low voltage_limit stays stable within the PWM encoder's bandwidth.
+// is too noisy to damp with (adding damping made it oscillate violently). A soft wall + low voltage_limit stays stable within the PWM encoder's bandwidth.
 const bool  WALLS_ON = true;
 const float A_MIN = -2.0 * PI;    // lower endstop (~ -360 deg from start)
 const float A_MAX = 2.0 * PI;    // upper endstop (~ +360 deg from start)
-const float WALL  = 1.5;          // soft: raise slowly if you want a harder wall
+const float WALL  = 1.5;          // soft: raise slowly if you want a harder wall- too high reverts back to violent shaking
 
 // ---- Direction: set to true to reverse which way is "up/next" ----
 const bool REVERSE_DIR = true;
@@ -70,7 +63,9 @@ bool     longFired = false;
 int lastIdx = 0;
 int bump    = 0;
 
-// ================= CORE 0: BLE task =================
+//logic is separated into two cores due to the timing periods being orders of magnitude different between BLE HID and the FOC loop
+
+//Bluetooth logic on core 0
 void bleTask(void *) {
   Evt e;
   for (;;) {
@@ -88,21 +83,21 @@ void bleTask(void *) {
   }
 }
 
-// ================= Button (runs on core 1) =================
+// Button logic on core 1
 void serviceButton() {
   bool b = digitalRead(BTN);
   uint32_t now = millis();
 
   if (btnPrev == HIGH && b == LOW) { btnDownAt = now; longFired = false; }
 
-  // long press -> toggle mode
+  // long press on button toggles mode
   if (b == LOW && !longFired && now - btnDownAt > 500) {
     knobMode ^= 1;
     lastIdx = lroundf(motor.shaftAngle() / stepFor(knobMode));  // reset index for new spacing
     bump = 16;                                                  // haptic confirmation
     longFired = true;
   }
-  // release -> short press = play/pause
+  // short press controls play and pause
   if (btnPrev == LOW && b == HIGH) {
     if (!longFired && now - btnDownAt > 30) emit(EVT_PLAYPAUSE);
   }
@@ -117,7 +112,7 @@ void setup() {
   sensor.enableInterrupt(doPWM);
   motor.linkSensor(&sensor);
 
-  driver.voltage_power_supply = 12;
+  driver.voltage_power_supply = 12; // 12V supply
   driver.init();
   motor.linkDriver(&driver);
 
@@ -138,7 +133,7 @@ void setup() {
   Serial.println("Ready. Pair 'SmartKnob' via Bluetooth.");
 }
 
-// ================= CORE 1: motor loop =================
+// Motor loop is on core 1
 void loop() {
   motor.loopFOC();
   serviceButton();
@@ -153,7 +148,7 @@ void loop() {
   if (fabs(err) < zone) torque = strengthFor(knobMode) * err;
   else                  torque = 0;
 
-  // soft endstops: add a gentle restoring push past the limits (no damping)
+  // soft endstops: adds a push when you're past the wall (no damping)
   if (WALLS_ON) {
     if (a > A_MAX) torque += WALL * (A_MAX - a);
     if (a < A_MIN) torque += WALL * (A_MIN - a);
@@ -163,11 +158,11 @@ void loop() {
   if (bump > 0) { torque += (bump & 2) ? 1.5f : -1.5f; bump--; }
 
   // ---- detent crossing with directional hysteresis ----
-  // Count ONE event per detent, only after committing well past the boundary,
-  // and immune to settle-wobble. We track the "committed" detent index and
-  // only advance it when the shaft passes a threshold placed HYST beyond the
-  // midpoint in the direction of travel. This fixes both early-skip (event
-  // firing before a full detent) and bounce-back double-counting.
+  /** Count ONE event per detent, only after committing well past the boundary,
+   and immune to settle-wobble. We track the "committed" detent index and
+   only advance it when the shaft passes a threshold placed HYST beyond the
+   midpoint in the direction of travel. This fixes both early-skip (event
+   firing before a full detent) and bounce-back double-counting. **/
   float pos = a / step;                       // position in detent units
   // how far past the committed detent, in fractions of a step:
   float delta = pos - lastIdx;
