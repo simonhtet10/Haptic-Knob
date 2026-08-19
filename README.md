@@ -4,7 +4,7 @@
 
 Turning the knob adjusts system volume or skips tracks. A tactile button plays/pauses and toggles
 modes — and each mode reprograms the *feel* of the knob: fine 10° detents for volume, coarse 50°
-detents with soft endstops for track skipping. Same hardware, different torque field.
+detents with soft endstops for track skipping. Different torque field per mode with no hardware difference.
 
 <!-- TODO: add demo GIF here — this is the single highest-impact asset on the page.
 ![Demo](media/demo.gif)
@@ -14,7 +14,7 @@ detents with soft endstops for track skipping. Same hardware, different torque f
 
 ## Why a knob
 
-The interesting part isn't the knob. It's the motor control stack underneath it.
+The knob serves as an intuitive way to control the motor stack underneath.
 
 Detents don't come from a mechanical spring and ball — there is no mechanical detent anywhere in
 this build. The knob is a 3-phase brushless motor running closed-loop field-oriented control, and
@@ -63,9 +63,9 @@ Two refinements make it feel right rather than merely work:
   spurious "dent" in the middle of the gap, because a pure sinusoidal torque profile has its
   strongest restoring force halfway between centers.
 - **Directional hysteresis on event emission.** A detent index is only committed after the knob
-  travels 60% of a step past the currently committed detent. Coarse detents overshoot and settle,
+  travels 60% of a step past the detent it is currently in. Coarse detents overshoot and settle,
   which was double-counting track skips — one skip on the overshoot, one on the bounce-back. The
-  hysteresis yields exactly one HID event per detent, with no early trigger and no bounce-back
+  hysteresis is put in place to yield exactly one HID event per detent, with no early trigger and no bounce-back
   double-count.
 
 ### Two-core split
@@ -87,8 +87,8 @@ immediately felt in the hand.
 These were the real engineering calls in the build.
 
 **1. Integrated-encoder motor, to delete the biggest mechanical risk.**
-The dominant failure mode in DIY FOC builds is diametric-magnet/encoder air-gap alignment. The
-ROB-27478 ships with the AS5048A factory-aligned to the rotor. That failure class never appeared.
+The dominant failure mode in DIY FOC builds is the air-gap alignment between the diametric-magnet and the encoder. The
+ROB-27478 ships with the AS5048A factory-aligned to the rotor. This ensures that there's no human error in this
 
 **2. The encoder was PWM, not SPI — and that shaped the whole control design.**
 The AS5048A supports both, but this unit only breaks out the PWM output. Using `MagneticSensorPWM`
@@ -105,7 +105,7 @@ is an SPI encoder, not a different gain.
 **4. Undocumented motor wiring, reverse-engineered with a DMM.**
 The phase leads terminate in bare surface pads with no markings. Measuring ~6.8 Ω between three
 pads identified them as the phase windings (datasheet: 6.34 Ω phase-to-phase; the excess is lead
-and probe resistance). Phases were soldered directly to the pads with hot-glue strain relief.
+and probe resistance). The phase wires were soldered directly to the surface pads.
 
 **5. BLE HID over the Spotify Web API, deliberately.**
 HID gives roughly 15 ms end-to-end latency versus 100–300 ms for a cloud round-trip, and needs no
