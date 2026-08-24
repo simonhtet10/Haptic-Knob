@@ -141,14 +141,14 @@ void loop() {
   float a    = motor.shaftAngle();
   float step = stepFor(knobMode);
 
-  // dead-zone detent: spring only near the center, free between detents
+  // dead-zone detent logic so it only springs near the detents
   float err  = roundf(a / step) * step - a;      // signed distance to nearest center
   float zone = zoneFor(knobMode);
   float torque;
   if (fabs(err) < zone) torque = strengthFor(knobMode) * err;
   else                  torque = 0;
 
-  // soft endstops: adds a push when you're past the wall (no damping)
+  // soft endstops: adds a push when you're past the wall (no damping - causes shaking)
   if (WALLS_ON) {
     if (a > A_MAX) torque += WALL * (A_MAX - a);
     if (a < A_MIN) torque += WALL * (A_MIN - a);
