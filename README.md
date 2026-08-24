@@ -33,7 +33,7 @@ and you change the physical sensation, with no mechanical change at all.
 
 ## Torque map
 
-<img width="1820" height="585" alt="torque_maps_sidebyside" src="https://github.com/user-attachments/assets/c6f46822-7360-4f8e-8011-c726f0cd8e84" />
+![Torque Maps Side by Side](../media/torque_maps_sidebyside.png)
 
 Measured detent torque vs. shaft angle in both modes. Same motor, same firmware with the only difference being the torque shaping parameters. Volume mode uses fine 10° detents; track mode uses coarse 50° dead-zone detents that coast freely between positions. The haptic feel is entirely software-defined.
 
