@@ -12,25 +12,6 @@ detents with soft endstops for track skipping. Different torque field per mode w
 
 ---
 
-## Why a knob
-
-The knob serves as an intuitive way to control the motor stack underneath.
-
-Detents don't come from a mechanical spring and ball — there is no mechanical detent anywhere in
-this build. The knob is a 3-phase brushless motor running closed-loop field-oriented control, and
-every "click" you feel is a torque command computed in firmware from the rotor angle:
-
-```
-AS5048A encoder ──► Clarke / Park ──► torque command ──► inverse Park ──► SVPWM ──► DRV8313 ──► motor
-       (rotor angle θ)                (detent profile)                    (~25 kHz)
-```
-
-That is the same architecture as an EV traction inverter or a robot joint actuator, at
-milliwatt scale — rotor-referenced current control with sinusoidal commutation. The haptics are
-just an application layer written on top of a torque-controlled axis: change the torque-vs-angle
-function and you change the physical sensation, with no mechanical change at all.
-
----
 
 ## Demo
 
@@ -42,6 +23,12 @@ response, plus detent snap-back at the endstops.
 <!-- TODO: 2–3 captioned stills from the video -->
 
 ---
+## Torque Map
+
+<img width="1820" height="585" alt="torque_maps_sidebyside" src="https://github.com/user-attachments/assets/c6f46822-7360-4f8e-8011-c726f0cd8e84" />
+
+Measured detent torque vs. shaft angle in both modes. Same motor, same firmware with the only difference being the torque shaping parameters. Volume mode uses fine 10° detents; track mode uses coarse 50° dead-zone detents that coast freely between positions. The haptic feel is entirely software-defined.
+
 
 ## How it works
 
@@ -67,6 +54,27 @@ Two refinements make it feel right rather than merely work:
   which was double-counting track skips — one skip on the overshoot, one on the bounce-back. The
   hysteresis is put in place to yield exactly one HID event per detent, with no early trigger and no bounce-back
   double-count.
+
+## Why a knob
+
+The knob serves as an intuitive way to control the motor stack underneath.
+
+Detents don't come from a mechanical spring and ball — there is no mechanical detent anywhere in
+this build. The knob is a 3-phase brushless motor running closed-loop field-oriented control, and
+every "click" you feel is a torque command computed in firmware from the rotor angle:
+
+```
+AS5048A encoder ──► Clarke / Park ──► torque command ──► inverse Park ──► SVPWM ──► DRV8313 ──► motor
+       (rotor angle θ)                (detent profile)                    (~25 kHz)
+```
+
+That is the same architecture as an EV traction inverter or a robot joint actuator, at
+milliwatt scale — rotor-referenced current control with sinusoidal commutation. The haptics are
+just an application layer written on top of a torque-controlled axis: change the torque-vs-angle
+function and you change the physical sensation, with no mechanical change at all.
+
+---
+
 
 ### Two-core split
 
