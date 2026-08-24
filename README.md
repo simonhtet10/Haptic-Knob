@@ -12,23 +12,32 @@ detents with soft endstops for track skipping. Different torque field per mode w
 
 ---
 
+The knob is the demonstration. The motor control stack underneath is the substance.
 
-## Demo
+Detents don't come from a mechanical spring and ball — there is no mechanical detent anywhere in
+this build. The knob is a 3-phase brushless motor running voltage-mode field-oriented control, and
+every "click" you feel is a torque command computed in firmware from the rotor angle:
 
-<!-- TODO: embed the captioned demo video, or link it.
-The demo shows: mode toggle → the same knob producing a visibly different rotation-per-track
-response, plus detent snap-back at the endstops.
--->
+```
+AS5048A ──► θe = p·θm − θ0 ──► haptic torque law ──► inverse Park ──► inverse Clarke ──► SVPWM ──► DRV8313 ──► motor
+  (θm)         (p = 11)          (detent → Uq)         (dq → αβ)        (αβ → abc)      (25 kHz)
+```
 
-<!-- TODO: 2–3 captioned stills from the video -->
+The stator voltage vector is placed exactly 90° electrical ahead of the rotor flux and held there
+as the rotor turns — rotor-referenced sinusoidal commutation, the same architecture as an EV
+traction inverter or a robot joint actuator, at milliwatt scale. The haptics are just an
+application layer written on top of a torque-controlled axis: change the torque-vs-angle function
+and you change the physical sensation, with no mechanical change at all.
 
 ---
-## Torque Map
+
+## Torque map
 
 <img width="1820" height="585" alt="torque_maps_sidebyside" src="https://github.com/user-attachments/assets/c6f46822-7360-4f8e-8011-c726f0cd8e84" />
 
 Measured detent torque vs. shaft angle in both modes. Same motor, same firmware with the only difference being the torque shaping parameters. Volume mode uses fine 10° detents; track mode uses coarse 50° dead-zone detents that coast freely between positions. The haptic feel is entirely software-defined.
 
+---
 
 ## How it works
 
@@ -55,27 +64,6 @@ Two refinements make it feel right rather than merely work:
   hysteresis is put in place to yield exactly one HID event per detent, with no early trigger and no bounce-back
   double-count.
 
-## Why a knob
-
-The knob serves as an intuitive way to control the motor stack underneath.
-
-Detents don't come from a mechanical spring and ball — there is no mechanical detent anywhere in
-this build. The knob is a 3-phase brushless motor running closed-loop field-oriented control, and
-every "click" you feel is a torque command computed in firmware from the rotor angle:
-
-```
-AS5048A encoder ──► Clarke / Park ──► torque command ──► inverse Park ──► SVPWM ──► DRV8313 ──► motor
-       (rotor angle θ)                (detent profile)                    (~25 kHz)
-```
-
-That is the same architecture as an EV traction inverter or a robot joint actuator, at
-milliwatt scale — rotor-referenced current control with sinusoidal commutation. The haptics are
-just an application layer written on top of a torque-controlled axis: change the torque-vs-angle
-function and you change the physical sensation, with no mechanical change at all.
-
----
-
-
 ### Two-core split
 
 | Core | Task |
@@ -90,9 +78,48 @@ immediately felt in the hand.
 
 ---
 
-## Key design decisions
+## Control architecture
 
-These were the real engineering calls in the build.
+"FOC" covers two separable halves, and this build implements one of them.
+
+**What is closed: field orientation.** The rotor's electrical angle is measured every loop
+(`θe = 11·θm − 0.82`), and the stator voltage vector is placed 90° electrical ahead of the rotor
+flux via inverse Park with `Ud = 0`. That is genuine rotor-referenced sinusoidal commutation —
+the geometric content of FOC.
+
+**What is open: current regulation.** The DRV8313 carrier has no current sense, so there is no
+forward Clarke/Park on measured currents and no PI loop on `id`/`iq`. The firmware commands a
+q-axis *voltage* and lets the winding decide the current:
+
+```
+                             ┌─ absent: i_abc → Clarke → Park → PI(id, iq) ─┐
+                             ╵                                              ╵
+   θe ──► torque law ──► Uq ──► inverse Park ──► inverse Clarke ──► SVPWM ──► inverter
+```
+
+This is standard practice for gimbal-motor haptics, and it is defensible here for a specific
+reason. At steady state a phase obeys `Uq = iq·R + L·diq/dt + Ke·ωm`. On a knob the rotor barely
+moves, so back-EMF is negligible and the inductive term is zero at DC, leaving:
+
+```
+iq ≈ Uq / R        τ ≈ (Kt / R) · Uq
+```
+
+Torque tracks commanded voltage. Two consequences follow, both real and both measurable:
+
+- **Torque droops with speed.** Back-EMF reaches 25% of the 4 V command at roughly 12.5 rad/s
+  (≈2 rev/s) — within reach of a brisk flick. A current loop would reject this by raising `Uq`;
+  this one cannot.
+- **Torque drifts with temperature.** Copper resistance rises ~0.4%/°C, so a 60°C winding rise
+  costs ~24% of torque with no compensation. The torque *constant* is stable; the torque is not.
+
+The accurate description is **voltage-mode FOC** (equivalently, open-loop-current FOC). Closing
+the current loop would need shunts or in-line sensors on two phases plus PWM-synchronous sampling
+— a hardware change, not a firmware one.
+
+---
+
+## Key design decisions
 
 **1. Integrated-encoder motor, to delete the biggest mechanical risk.**
 The dominant failure mode in DIY FOC builds is the air-gap alignment between the diametric-magnet and the encoder. The
@@ -139,6 +166,9 @@ edges and no visible shoot-through notch, and the two channels sit at visibly di
 cycles at this instant, which is the commutation acting on the two phases independently.
 
 <!-- TODO: phase envelope figure — see analysis/README.md for the recapture procedure.
+Note when writing the caption: measured phase-to-ground, SVPWM produces a saddle-shaped
+envelope, not a sinusoid, because the third-harmonic common-mode injection that buys 15.5%
+extra fundamental amplitude cancels only differentially. Plot C1 − C2 for the sinusoid.
 ![Sinusoidal commutation](media/phase_pwm_envelope.png)
 -->
 
@@ -194,36 +224,17 @@ substitute your own values.
 
 ---
 
-## Repo layout
-
-```
-haptic-smart-knob/
-├── README.md
-├── DEBUGGING.md            # the debugging log
-├── firmware/               # the Arduino sketch
-├── hardware/
-│   ├── BOM.csv
-│   └── pinmap.md
-├── media/                  # demo GIF/video, AD2 figures, build photos
-└── analysis/
-    ├── plot_phase_pwm.py   # AD2 CSV → clean figures
-    └── README.md           # capture settings + recapture procedure
-```
-
----
-
 ## Known limitations
 
-Stated plainly, because knowing where a design stops is part of the design.
-
-- **No true volume endstops.** BLE HID is write-only. The firmware sends Volume Up/Down keycodes but has no knowledge of      the host's actual volume level, so it cannot place a hard wall at 0% or 100%. Track
+- **No true volume endstops.** BLE HID is write-only. The firmware sends Volume Up/Down keycodes but has no knowledge of the host's actual volume level, so it cannot place a hard wall at 0% or 100%. Track
   mode has real endstops because its range is defined locally, not by the host.
 - **Velocity feedback is not usable for control.** The PWM encoder interface (~1 kHz, quantized)
   makes differentiated velocity too noisy for damping. Detent settling is therefore underdamped
   compared with an SPI-encoder build.
-- **No current sensing.** The DRV8313 carrier provides none, so the drive runs open-loop in
-  current: torque is commanded as a q-axis *voltage*, and the actual torque varies with winding
-  temperature and back-EMF.
+- **No current sensing.** Torque is commanded as a q-axis *voltage* rather than regulated as a
+  current, so it varies with winding temperature and back-EMF — see
+  [Control architecture](#control-architecture). There is no current-loop bandwidth to quote,
+  because there is no current loop.
 - **Breadboard construction**, with the ESP32 powered separately over USB.
 
 ## Next steps
@@ -238,5 +249,6 @@ Stated plainly, because knowing where a design stops is part of the design.
 
 ---
 
+## License
 
 MIT — see [LICENSE](LICENSE).
