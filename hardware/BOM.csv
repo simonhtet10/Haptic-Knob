@@ -1,0 +1,15 @@
+Ref,Qty,Part Number,Description,Manufacturer
+,,,--- IN THE BUILD ---,
+M1,1,ROB-27478 (DM3505),"3-phase BLDC gimbal motor with integrated AS5048A encoder. 12 V, 11 pole pairs, 6.34 ohm phase-to-phase, 1.08 mH, Kt = 0.08 Nm/A, 1.1 A nominal / 1.9 A stall, 40x20 mm. Encoder factory-aligned to rotor; phase leads terminate in unmarked bare surface pads.",SparkFun Electronics
+U1,1,AS5048A,"14-bit on-axis magnetic rotary encoder. Integrated on M1, not sold separately. Supports SPI and PWM, but only the PWM output is broken out on this unit — approximately 12 effective bits at ~1 kHz update rate.",ams-OSRAM
+U2,1,SimpleFOCMini v1.0,"3-phase BLDC driver board based on the Texas Instruments DRV8313. 8-30 V input, 2.5 A per phase, 3-PWM interface, onboard 3V3 LDO, 26x21 mm. No current sensing, so the drive runs in voltage-torque mode.",SimpleFOC (open hardware)
+U3,1,ESP32-WROOM-32 DevKitC (30-pin),"Dual-core 240 MHz microcontroller board with BLE and a CP2102 USB-C interface. Core 1 runs the FOC loop, core 0 runs the BLE HID stack.",Espressif (module); generic board vendor
+SW1,1,6x6x5 mm tactile switch,"Momentary SPST pushbutton, through-hole. GPIO 32 to GND with internal pull-up. Short press = play/pause, long press = mode toggle.",generic
+PS1,1,-,"12 V DC barrel-jack power adapter, 1 A minimum. Powers the driver rail only; the ESP32 is USB-powered in this revision.",generic
+,1,-,"Solderless breadboard, 830 tie point.",generic
+,1,-,"Jumper wire assortment, male-male and male-female.",generic
+,1,-,"Hookup wire, 22 AWG stranded. Soldered directly to the motor phase pads.",generic
+,,,,
+,,,--- BENCH / CHARACTERIZATION ONLY ---,
+R1,1,-,"1 ohm current shunt resistor, 2 W or better. Placed in series with one phase for the current/torque capture; measured differentially, since neither terminal sits at ground. Not part of the running build.",generic
+,1,Analog Discovery 2,"2-channel USB oscilloscope, 100 MS/s. Used for the phase PWM captures. Listed for reproducibility only.",Digilent
