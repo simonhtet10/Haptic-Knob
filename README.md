@@ -77,7 +77,7 @@ Two refinements make it feel right rather than merely work:
 
 The two are joined by a **zero-timeout FreeRTOS queue**. If the BLE side blocks — a stalled
 notification, a host that stopped acknowledging — the haptics never stall, because the producer
-never waits on the queue. Dropping a media event is acceptable; a hitch in the torque loop is
+never waits on the queue. It's acceptable to drop a media event but a hitch in the torque loop is
 immediately felt in the hand.
 
 ---
@@ -88,7 +88,7 @@ These were the real engineering calls in the build.
 
 **1. Integrated-encoder motor, to delete the biggest mechanical risk.**
 The dominant failure mode in DIY FOC builds is the air-gap alignment between the diametric-magnet and the encoder. The
-ROB-27478 ships with the AS5048A factory-aligned to the rotor. This ensures that there's no human error in this
+ROB-27478 ships with the AS5048A factory-aligned to the rotor. This ensures that there's no human error in this part of the build.
 
 **2. The encoder was PWM, not SPI — and that shaped the whole control design.**
 The AS5048A supports both, but this unit only breaks out the PWM output. Using `MagneticSensorPWM`
@@ -208,8 +208,7 @@ haptic-smart-knob/
 
 Stated plainly, because knowing where a design stops is part of the design.
 
-- **No true volume endstops.** BLE HID is write-only. The firmware sends Volume Up/Down keycodes
-  and never learns the host's actual level, so it cannot place a hard wall at 0% or 100%. Track
+- **No true volume endstops.** BLE HID is write-only. The firmware sends Volume Up/Down keycodes but has no knowledge of      the host's actual volume level, so it cannot place a hard wall at 0% or 100%. Track
   mode has real endstops because its range is defined locally, not by the host.
 - **Velocity feedback is not usable for control.** The PWM encoder interface (~1 kHz, quantized)
   makes differentiated velocity too noisy for damping. Detent settling is therefore underdamped
@@ -231,13 +230,5 @@ Stated plainly, because knowing where a design stops is part of the design.
 
 ---
 
-## Related
-
-<!-- TODO: link the buck converter repo here -->
-Companion project: a closed-loop analog buck converter (12 V → 5 V, discrete Type III
-compensator) — measured f_sw ≈ 71.6 kHz, crossover ≈ 3.1 kHz, phase margin ≈ 102°, 87% efficiency
-at 0.5 A.
-
-## License
 
 MIT — see [LICENSE](LICENSE).
