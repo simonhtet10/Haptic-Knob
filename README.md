@@ -200,49 +200,16 @@ Full pin map: ![Wiring](media/wiring.svg) · Bill of materials:
 
 ---
 
-## Build and flash notes
-
-Three non-obvious requirements — each one cost real debugging time. Full log in
-[`DEBUGGING.md`](DEBUGGING.md).
-
-1. **Pin `arduino-esp32` to `3.1.3`.** Core 3.2.x ships ESP-IDF 5.4, whose MCPWM initialization
-   fails with SimpleFOC's 3-PWM driver configuration. Set this in Boards Manager before building.
-2. **Use the [wakwak-koba NimBLE fork](https://github.com/wakwak-koba/ESP32-BLE-Keyboard) of
-   `ESP32-BLE-Keyboard`.** The original T-vK library does not build against core 3.x.
-3. **Patch the fork:** add `#include <functional>` to the top of `BleKeyboard.h`. Without it the
-   build fails on `std::function`.
-
-Then set the board to *ESP32 Dev Module*, select the CP2102 port, and flash
-[`firmware/`](firmware/).
-
-**Calibration values are currently compile-time constants** (`zero_electric_angle ≈ 0.82`,
-sensor direction CW). If you rebuild on different hardware, run the FOC calibration once and
-substitute your own values.
-
----
 
 ## Known limitations
 
-- **No true volume endstops.** BLE HID is write-only. The firmware sends Volume Up/Down keycodes but has no knowledge of the host's actual volume level, so it cannot place a hard wall at 0% or 100%. Track
-  mode has real endstops because its range is defined locally, not by the host.
+- **No true volume endstops.** BLE HID is write-only. The firmware sends Volume Up/Down keycodes but has no knowledge of  the host's actual volume level, so it cannot place a hard wall at 0% or 100%. Changing the volume through another method would throw off predetermined walls/Track mode has real endstops because its range is defined locally, not by the host.
 - **Velocity feedback is not usable for control.** The PWM encoder interface (~1 kHz, quantized)
   makes differentiated velocity too noisy for damping. Detent settling is therefore underdamped
   compared with an SPI-encoder build.
 - **No current sensing.** Torque is commanded as a q-axis *voltage* rather than regulated as a
-  current, so it varies with winding temperature and back-EMF — see
-  [Control architecture](#control-architecture). There is no current-loop bandwidth to quote,
-  because there is no current loop.
+  current, so it varies with winding temperature and back-EMF. A 1 Ω shunt measurement would resolve the actual current and torque figures.
 - **Breadboard construction**, with the ESP32 powered separately over USB.
-
-## Next steps
-
-- [ ] Persist `zero_electric_angle` and `sensor_direction` to NVS, eliminating the boot-time
-      calibration twitch
-- [ ] Current/torque characterization via 1 Ω shunt (τ = 0.08 N·m/A × I)
-- [ ] Step response capture
-- [ ] Migrate from breadboard to perfboard
-- [ ] 3D-printed enclosure
-- [ ] Onboard buck converter for standalone 5 V, removing the USB tether
 
 ---
 
