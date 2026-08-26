@@ -1,7 +1,7 @@
 # Debugging log
 
 The problems that actually cost time, and how each was diagnosed. Ordered roughly by how long
-they took to find rather than by when they appeared.
+they took to find rather than by when they appeared. 
 
 ---
 
@@ -78,15 +78,15 @@ including full turns, which is what a multi-turn control loop needs.
 
 ### Unlabeled motor phase leads
 
-**Problem:** the motor's phase connections are bare surface pads with no markings or documentation.
+**Problem:** the motor's phase connections are bare recessed surface pads with no markings on it or documentation available.
 
-**Method:** measured resistance across pad pairs with a DMM. Three pads read ~6.8 Ω pairwise —
+**Method:** measured resistance across pad pairs with a DMM. Three pads read around 6.8 Ω pairwise which is
 consistent with the datasheet's 6.34 Ω phase-to-phase plus lead and probe resistance — identifying
 them as the windings. In a wye-connected 3-phase motor any pad triplet reading equal pairwise
 resistance is the phase set, and phase *order* only sets rotation direction, which is corrected in
 firmware.
 
-**Fix:** soldered directly to the pads, with hot glue for strain relief.
+**Fix:** soldered directly to the recessed pads, with hot glue for strain relief.
 
 ---
 
@@ -94,8 +94,7 @@ firmware.
 
 ### Damping made oscillation worse
 
-**Symptom:** adding the standard `−DAMP · velocity` term to the detent torque increased ringing
-rather than settling it.
+**Symptom:** adding the standard `−DAMP · velocity` term to the detent torque increased ringing and caused the gimbal to shake violentlyrather than settling it.
 
 **Diagnosis:** velocity is derived by differentiating the PWM-interface angle signal, which updates
 at roughly 1 kHz and is quantized. Differentiation amplifies that quantization noise, so the
@@ -111,10 +110,10 @@ against a noise-limited signal is time wasted.
 
 ### Mid-gap "dent" in coarse detent mode
 
-**Symptom:** in 50° track mode, a spurious catch appeared *between* detent centers.
+**Symptom:** in 50° track mode, a false catch appeared *between* detent centers.
 
 **Cause:** a pure sinusoidal torque profile has its maximum restoring force at the midpoint
-between centers. At 10° spacing this is imperceptible; at 50° it becomes a distinct false detent.
+between centers. At 10° spacing this is imperceptible but at 50° it's a noticeable fake detent.
 
 **Fix:** dead-zone profile — restoring torque applies only within a catch zone around each center,
 zero in between.
@@ -132,10 +131,3 @@ the overshoot and again on the bounce-back.
 step past the currently committed detent. One event per detent, no early trigger, no double-count.
 
 ---
-
-## Cross-cutting
-
-Three of the hardest problems here (**MCPWM init**, **BLE build failure**, **"Bluetooth not
-found"**) had nothing to do with motor control. In an embedded project the toolchain is a
-first-class source of bugs, and the useful early question is usually *"is the thing I think is
-running actually running?"* before *"is my algorithm right?"*
