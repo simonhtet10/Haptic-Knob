@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560" font-family="Helvetica, Arial, sans-serif" role="img" aria-label="Wiring diagram for the haptic smart knob">
+<title>Haptic smart knob wiring diagram</title>
+<desc>ESP32 drives a SimpleFOCMini DRV8313 board over four PWM lines plus ground; the driver drives three motor phases; the AS5048A encoder connects directly back to the ESP32; a tactile button connects GPIO 32 to ground; a 12 volt adapter supplies the driver rail.</desc>
+
+<rect x="0" y="0" width="900" height="560" fill="#F7F6F3"/>
+
+<!-- connections: ESP32 -> driver -->
+<line x1="240" y1="149" x2="390" y2="149" stroke="#4A4842" stroke-width="1.6"/>
+<line x1="240" y1="177" x2="390" y2="177" stroke="#4A4842" stroke-width="1.6"/>
+<line x1="240" y1="205" x2="390" y2="205" stroke="#4A4842" stroke-width="1.6"/>
+<line x1="240" y1="233" x2="390" y2="233" stroke="#4A4842" stroke-width="1.6"/>
+<line x1="240" y1="261" x2="390" y2="261" stroke="#4A4842" stroke-width="1.6"/>
+
+<!-- connections: driver -> motor phases -->
+<line x1="580" y1="163" x2="700" y2="163" stroke="#4A4842" stroke-width="2.2"/>
+<line x1="580" y1="198" x2="700" y2="198" stroke="#4A4842" stroke-width="2.2"/>
+<line x1="580" y1="233" x2="700" y2="233" stroke="#4A4842" stroke-width="2.2"/>
+<text x="640" y="255" font-size="10" fill="#6B6862" text-anchor="middle">order arbitrary</text>
+
+<!-- connections: 12 V rail -->
+<line x1="430" y1="62" x2="430" y2="115" stroke="#B4602C" stroke-width="2.2"/>
+<line x1="520" y1="62" x2="520" y2="115" stroke="#4A4842" stroke-width="2.2"/>
+<text x="438" y="85" font-size="11" fill="#B4602C">+12 V</text>
+<text x="528" y="85" font-size="11" fill="#4A4842">GND</text>
+
+<!-- connections: encoder back to ESP32 -->
+<polyline points="240,324 765,324 765,275" fill="none" stroke="#2A7A54" stroke-width="1.8"/>
+<text x="460" y="316" font-size="11" fill="#2A7A54" text-anchor="middle">encoder — 3V3, GND, PWM to GPIO 34</text>
+<text x="775" y="300" font-size="11" fill="#2A7A54">AS5048A</text>
+
+<!-- connections: button -->
+<line x1="140" y1="390" x2="140" y2="430" stroke="#4A4842" stroke-width="1.6"/>
+<line x1="140" y1="490" x2="140" y2="516" stroke="#4A4842" stroke-width="1.6"/>
+<line x1="123" y1="516" x2="157" y2="516" stroke="#4A4842" stroke-width="2"/>
+<line x1="129" y1="524" x2="151" y2="524" stroke="#4A4842" stroke-width="2"/>
+<line x1="135" y1="532" x2="145" y2="532" stroke="#4A4842" stroke-width="2"/>
+<text x="165" y="522" font-size="11" fill="#4A4842">GND</text>
+
+<!-- block: ESP32 -->
+<text x="145" y="88" font-size="13" font-weight="bold" fill="#1A1915" text-anchor="middle">ESP32-WROOM-32 DevKitC</text>
+<rect x="50" y="100" width="190" height="290" rx="8" fill="#E3EEF8" stroke="#2C6C9E" stroke-width="1.5"/>
+<text x="228" y="153" font-size="11" fill="#1A1915" text-anchor="end">GPIO 25</text>
+<text x="228" y="181" font-size="11" fill="#1A1915" text-anchor="end">GPIO 26</text>
+<text x="228" y="209" font-size="11" fill="#1A1915" text-anchor="end">GPIO 27</text>
+<text x="228" y="237" font-size="11" fill="#1A1915" text-anchor="end">GPIO 14</text>
+<text x="228" y="265" font-size="11" fill="#1A1915" text-anchor="end">GND</text>
+<text x="228" y="328" font-size="11" fill="#1A1915" text-anchor="end">3V3 · GND · GPIO 34</text>
+<text x="140" y="379" font-size="11" fill="#1A1915" text-anchor="middle">GPIO 32</text>
+<text x="145" y="126" font-size="10" fill="#6B6862" text-anchor="middle">core 1: FOC · core 0: BLE</text>
+
+<!-- block: 12 V supply -->
+<rect x="390" y="18" width="170" height="44" rx="8" fill="#FBE8DA" stroke="#B4602C" stroke-width="1.5"/>
+<text x="475" y="45" font-size="13" font-weight="bold" fill="#1A1915" text-anchor="middle">12 V DC adapter</text>
+
+<!-- block: driver -->
+<text x="485" y="103" font-size="13" font-weight="bold" fill="#1A1915" text-anchor="middle">SimpleFOCMini (DRV8313)</text>
+<rect x="390" y="115" width="190" height="160" rx="8" fill="#E9E5F4" stroke="#6B4FA8" stroke-width="1.5"/>
+<text x="402" y="153" font-size="11" fill="#1A1915">IN1</text>
+<text x="402" y="181" font-size="11" fill="#1A1915">IN2</text>
+<text x="402" y="209" font-size="11" fill="#1A1915">IN3</text>
+<text x="402" y="237" font-size="11" fill="#1A1915">EN</text>
+<text x="402" y="265" font-size="11" fill="#1A1915">GND</text>
+<text x="568" y="167" font-size="11" fill="#1A1915" text-anchor="end">M1</text>
+<text x="568" y="202" font-size="11" fill="#1A1915" text-anchor="end">M2</text>
+<text x="568" y="237" font-size="11" fill="#1A1915" text-anchor="end">M3</text>
+
+<!-- block: motor -->
+<text x="780" y="103" font-size="13" font-weight="bold" fill="#1A1915" text-anchor="middle">DM3505 gimbal motor</text>
+<rect x="700" y="115" width="160" height="160" rx="8" fill="#DFF0E7" stroke="#2A7A54" stroke-width="1.5"/>
+<text x="712" y="167" font-size="11" fill="#1A1915">phase A</text>
+<text x="712" y="202" font-size="11" fill="#1A1915">phase B</text>
+<text x="712" y="237" font-size="11" fill="#1A1915">phase C</text>
+<text x="780" y="140" font-size="10" fill="#6B6862" text-anchor="middle">11 pole pairs</text>
+
+<!-- block: button -->
+<text x="140" y="420" font-size="13" font-weight="bold" fill="#1A1915" text-anchor="middle">Tactile button</text>
+<rect x="70" y="430" width="140" height="60" rx="8" fill="#F6F1DD" stroke="#8F7A1C" stroke-width="1.5"/>
+<text x="140" y="455" font-size="10" fill="#4A4842" text-anchor="middle">short: play / pause</text>
+<text x="140" y="474" font-size="10" fill="#4A4842" text-anchor="middle">long: mode toggle</text>
+
+<!-- callout -->
+<rect x="390" y="380" width="470" height="110" rx="6" fill="#FFFFFF" stroke="#A8A49B" stroke-width="1" stroke-dasharray="5 4"/>
+<text x="406" y="406" font-size="12" font-weight="bold" fill="#1A1915">Common ground is mandatory</text>
+<text x="406" y="430" font-size="11" fill="#4A4842">ESP32 GND, driver GND (12 V −), and encoder GND must all be tied</text>
+<text x="406" y="450" font-size="11" fill="#4A4842">together. Without a shared reference the PWM logic levels are</text>
+<text x="406" y="470" font-size="11" fill="#4A4842">undefined and the angle signal is meaningless.</text>
+
+</svg>
