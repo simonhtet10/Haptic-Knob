@@ -194,12 +194,9 @@ extra fundamental amplitude cancels only differentially. Plot C1 − C2 for the 
 **DM3505 motor specs:** 12 V / 1.1 A nominal, 1.9 A stall, phase-to-phase R = 6.34 Ω,
 L = 1.08 mH, torque constant 0.08 N·m/A, 11 pole pairs.
 
-Full pin map: [`hardware/pinmap.md`](hardware/pinmap.md) · Bill of materials:
+Full pin map: ![Wiring](media/wiring.svg) · Bill of materials:
 [`hardware/BOM.csv`](hardware/BOM.csv)
 
-<!-- TODO: build photo — breadboard overview, and a close-up of the soldered phase pads
-![Build](media/build_photos/breadboard.jpg)
--->
 
 ---
 
