@@ -157,7 +157,7 @@ Measured on an Analog Discovery 2.
 
 ### Phase PWM — switching frequency
 
-![Phase PWM switching](media/phase_pwm_switching.png)
+![Phase PWM switching](media/phase_PWM_switching.png)
 
 Two inverter phase outputs, 10 µs/div, 5 V/div. Measured switching frequency
 **24.998 kHz and 25.009 kHz** on the two channels — matching the configured ~25 kHz PWM carrier,
