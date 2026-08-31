@@ -1,0 +1,24 @@
+# Build artifacts
+build/
+*.bin
+*.elf
+*.hex
+*.map
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Large raw captures — keep exports, not multi-MB scope bitmaps
+*.bmp
+
+# Editors
+.vscode/
+.idea/
