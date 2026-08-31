@@ -1,6 +1,6 @@
 # Firmware
 
-`BLE_detent_wall_smartknob_final.ino` — the complete sketch. Single file; open in the Arduino IDE.
+`BLE_detent_wall_smartknob_final.ino` is the complete sketch. 
 
 ## Dependencies
 
@@ -43,15 +43,14 @@ matter when reading the sketch:
 | Control mode | torque / voltage |
 | `zero_electric_angle` | ≈ 0.82 rad |
 | Sensor direction | CW |
-| Direction | reversed |
 | Volume mode detent | 10° |
 | Track mode detent | 50° |
 | Detent profile | dead-zone |
 | Endstops | soft, `WALL = 1.5` |
 | Damping | disabled — see [`DEBUGGING.md`](../DEBUGGING.md) |
 
-The `voltage_limit` of 4 V against a 12 V rail keeps continuous current well below the motor's
-1.1 A nominal rating. The knob holds position against a hand rather than spinning a load, so
+The `voltage_limit` of 4 V against a 12 V rail keeps continuous current below the motor's
+1.1A rating. The knob holds position against a hand rather than spinning a load, so
 thermal headroom matters more than peak torque.
 
 ## Calibration
