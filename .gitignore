@@ -16,7 +16,7 @@ venv/
 Thumbs.db
 desktop.ini
 
-# Large raw captures — keep exports, not multi-MB scope bitmaps
+# Large raw captures 
 *.bmp
 
 # Editors
