@@ -130,10 +130,10 @@ The AS5048A supports both, but this unit only breaks out the PWM output. Using `
 caps angle updates at roughly 1 kHz and makes the differentiated velocity estimate noisy. That
 single interface constraint drove decision 3.
 
-**3. Damping was removed after measurement, not after taste.**
+**3. Damping was removed after measurement.**
 A `−DAMP · velocity` term is the textbook way to settle a haptic detent. Here it made the knob
-oscillate *worse*. The velocity signal is a finite difference of a ~1 kHz quantized angle, so the
-damping term was injecting noise-driven torque faster than it removed energy. Endstops were kept
+oscillate much worse. The velocity signal is a finite difference of a ~1 kHz quantized angle, so the
+damping term was injecting noise-driven torque faster than it removed energy. The endstops were kept
 soft for the same reason. This is an interface-bandwidth limitation, not a tuning failure — the fix
 is an SPI encoder, not a different gain.
 
