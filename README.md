@@ -6,9 +6,9 @@ Turning the knob adjusts system volume or skips tracks. A tactile button plays/p
 modes — and each mode reprograms the *feel* of the knob: fine 10° detents for volume, coarse 50°
 detents with soft endstops for track skipping. Different torque field per mode with no hardware difference.
 
-<!-- TODO: add demo GIF here — this is the single highest-impact asset on the page.
 ![Demo](media/demo.gif)
--->
+
+*Full captioned demo: [media/demo.mp4](media/demo.mp4)*
 
 ---
 
