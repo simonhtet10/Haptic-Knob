@@ -165,19 +165,6 @@ above the audible band so the drive is silent. Both phases swing the full 12 V r
 edges and no visible shoot-through notch, and the two channels sit at visibly different duty
 cycles at this instant, which is the commutation acting on the two phases independently.
 
-<!-- TODO: phase envelope figure — see analysis/README.md for the recapture procedure.
-Note when writing the caption: measured phase-to-ground, SVPWM produces a saddle-shaped
-envelope, not a sinusoid, because the third-harmonic common-mode injection that buys 15.5%
-extra fundamental amplitude cancels only differentially. Plot C1 − C2 for the sinusoid.
-![Sinusoidal commutation](media/phase_pwm_envelope.png)
--->
-
-<!-- TODO: current → torque figure (1 Ω shunt; τ = 0.08 N·m/A × I)
-![Current and torque](media/current_torque.png)
--->
-
-<!-- TODO: step response (serial-logged) -->
-
 ---
 
 ## Hardware
